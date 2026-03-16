@@ -1,0 +1,40 @@
+name: pause
+summary: ROCK for the pause Project.
+description: >
+  Pause is a lightweight tool for pausing and resuming processes in a containerized environment.
+version: &version 3.10.1
+license: Apache-2.0
+
+base: bare
+build-base: ubuntu@22.04
+platforms:
+  amd64:
+  arm64:
+
+services:
+  pause:
+    override: replace
+    summary: pause service
+    startup: enabled
+    command: /pause [ ]
+    on-failure: shutdown
+
+entrypoint-command: /pause
+
+parts:
+  pause:
+    plugin: nil
+    source: https://github.com/kubernetes/kubernetes.git
+    source-type: git
+    source-subdir: build/pause
+    source-tag: release-1.34
+    source-depth: 1
+    build-environment:
+      - TAG: *version
+    build-packages:
+      - build-essential
+    override-build: |
+      REV=$(git describe --contains --always --match='v*')
+      CFLAGS="-Os -Wall -Werror -static -DVERSION=v${TAG}-${REV}"
+      gcc ${CFLAGS} -o ${CRAFT_PART_INSTALL}/pause ${CRAFT_PART_SRC_WORK}/linux/pause.c
+      strip ${CRAFT_PART_INSTALL}/pause
