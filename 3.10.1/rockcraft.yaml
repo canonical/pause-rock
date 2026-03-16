@@ -2,7 +2,7 @@ name: pause
 summary: ROCK for the pause Project.
 description: >
   Pause is a lightweight tool for pausing and resuming processes in a containerized environment.
-adopt-info: pause-version
+version: &version 3.10.1
 license: Apache-2.0
 
 base: bare
@@ -30,7 +30,7 @@ parts:
     source-tag: release-1.34
     source-depth: 1
     build-environment:
-      - TAG: 3.10.1
+      - TAG: *version
     build-packages:
       - build-essential
     override-build: |
@@ -38,11 +38,3 @@ parts:
       CFLAGS="-Os -Wall -Werror -static -DVERSION=v${TAG}-${REV}"
       gcc ${CFLAGS} -o ${CRAFT_PART_INSTALL}/pause ${CRAFT_PART_SRC_WORK}/linux/pause.c
       strip ${CRAFT_PART_INSTALL}/pause
-
-  pause-version:
-    after: [pause]
-    plugin: nil
-    source: .
-    override-prime: |
-      pause_version=$($CRAFT_PRIME/pause -v | awk '{print $2}')
-      craftctl set version="$pause_version"
